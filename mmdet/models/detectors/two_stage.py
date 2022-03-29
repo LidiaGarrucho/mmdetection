@@ -1,3 +1,6 @@
+# Copyright (c) OpenMMLab. All rights reserved.
+import warnings
+
 import torch
 
 from ..builder import DETECTORS, build_backbone, build_head, build_neck
@@ -22,7 +25,10 @@ class TwoStageDetector(BaseDetector):
                  pretrained=None,
                  init_cfg=None):
         super(TwoStageDetector, self).__init__(init_cfg)
-        backbone.pretrained = pretrained
+        if pretrained:
+            warnings.warn('DeprecationWarning: pretrained is deprecated, '
+                          'please use "init_cfg" instead')
+            backbone.pretrained = pretrained
         self.backbone = build_backbone(backbone)
 
         if neck is not None:
@@ -132,7 +138,8 @@ class TwoStageDetector(BaseDetector):
                 gt_bboxes,
                 gt_labels=None,
                 gt_bboxes_ignore=gt_bboxes_ignore,
-                proposal_cfg=proposal_cfg)
+                proposal_cfg=proposal_cfg,
+                **kwargs)
             losses.update(rpn_losses)
         else:
             proposal_list = proposals
@@ -193,4 +200,12 @@ class TwoStageDetector(BaseDetector):
         img_metas[0]['img_shape_for_onnx'] = img_shape
         x = self.extract_feat(img)
         proposals = self.rpn_head.onnx_export(x, img_metas)
-        return self.roi_head.onnx_export(x, proposals, img_metas)
+        if hasattr(self.roi_head, 'onnx_export'):
+            return self.roi_head.onnx_export(x, proposals, img_metas)
+        else:
+            raise NotImplementedError(
+                f'{self.__class__.__name__} can not '
+                f'be exported to ONNX. Please refer to the '
+                f'list of supported models,'
+                f'https://mmdetection.readthedocs.io/en/latest/tutorials/pytorch2onnx.html#list-of-supported-models-exportable-to-onnx'  # noqa E501
+            )

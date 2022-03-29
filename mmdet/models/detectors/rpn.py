@@ -1,3 +1,6 @@
+# Copyright (c) OpenMMLab. All rights reserved.
+import warnings
+
 import mmcv
 import torch
 from mmcv.image import tensor2imgs
@@ -20,7 +23,10 @@ class RPN(BaseDetector):
                  pretrained=None,
                  init_cfg=None):
         super(RPN, self).__init__(init_cfg)
-        backbone.pretrained = pretrained
+        if pretrained:
+            warnings.warn('DeprecationWarning: pretrained is deprecated, '
+                          'please use "init_cfg" instead')
+            backbone.pretrained = pretrained
         self.backbone = build_backbone(backbone)
         self.neck = build_neck(neck) if neck is not None else None
         rpn_train_cfg = train_cfg.rpn if train_cfg is not None else None
@@ -146,4 +152,8 @@ class RPN(BaseDetector):
         Returns:
             np.ndarray: The image with bboxes drawn on it.
         """
-        mmcv.imshow_bboxes(data, result, top_k=top_k)
+        if kwargs is not None:
+            kwargs.pop('score_thr', None)
+            kwargs.pop('text_color', None)
+            kwargs['colors'] = kwargs.pop('bbox_color', 'green')
+        mmcv.imshow_bboxes(data, result, top_k=top_k, **kwargs)

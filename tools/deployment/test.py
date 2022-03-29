@@ -1,11 +1,12 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import argparse
+import warnings
 
 import mmcv
 from mmcv import Config, DictAction
 from mmcv.parallel import MMDataParallel
 
 from mmdet.apis import single_gpu_test
-from mmdet.core.export.model_wrappers import ONNXRuntimeDetector
 from mmdet.datasets import (build_dataloader, build_dataset,
                             replace_ImageToTensor)
 
@@ -22,6 +23,11 @@ def parse_args():
         help='Format the output results without perform evaluation. It is'
         'useful when you want to format the result to a specific format and '
         'submit it to the test server')
+    parser.add_argument(
+        '--backend',
+        required=True,
+        choices=['onnxruntime', 'tensorrt'],
+        help='Backend for input model to run. ')
     parser.add_argument(
         '--eval',
         type=str,
@@ -103,8 +109,14 @@ def main():
         dist=False,
         shuffle=False)
 
-    model = ONNXRuntimeDetector(
-        args.model, class_names=dataset.CLASSES, device_id=0)
+    if args.backend == 'onnxruntime':
+        from mmdet.core.export.model_wrappers import ONNXRuntimeDetector
+        model = ONNXRuntimeDetector(
+            args.model, class_names=dataset.CLASSES, device_id=0)
+    elif args.backend == 'tensorrt':
+        from mmdet.core.export.model_wrappers import TensorRTDetector
+        model = TensorRTDetector(
+            args.model, class_names=dataset.CLASSES, device_id=0)
 
     model = MMDataParallel(model, device_ids=[0])
     outputs = single_gpu_test(model, data_loader, args.show, args.show_dir,
@@ -130,3 +142,15 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+    # Following strings of text style are from colorama package
+    bright_style, reset_style = '\x1b[1m', '\x1b[0m'
+    red_text, blue_text = '\x1b[31m', '\x1b[34m'
+    white_background = '\x1b[107m'
+
+    msg = white_background + bright_style + red_text
+    msg += 'DeprecationWarning: This tool will be deprecated in future. '
+    msg += blue_text + 'Welcome to use the unified model deployment toolbox '
+    msg += 'MMDeploy: https://github.com/open-mmlab/mmdeploy'
+    msg += reset_style
+    warnings.warn(msg)

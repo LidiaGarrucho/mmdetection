@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import os.path as osp
 from functools import partial
 
@@ -8,6 +9,7 @@ import torch
 from mmcv.cnn import Scale
 
 from mmdet import digit_version
+from mmdet.models import build_detector
 from mmdet.models.dense_heads import (FCOSHead, FSAFHead, RetinaHead, SSDHead,
                                       YOLOV3Head)
 from .utils import ort_validate
@@ -18,6 +20,76 @@ if digit_version(torch.__version__) <= digit_version('1.5.0'):
     pytest.skip(
         'ort backend does not support version below 1.5.0',
         allow_module_level=True)
+
+
+def test_cascade_onnx_export():
+
+    config_path = './configs/cascade_rcnn/cascade_rcnn_r50_fpn_1x_coco.py'
+    cfg = mmcv.Config.fromfile(config_path)
+    model = build_detector(cfg.model, test_cfg=cfg.get('test_cfg'))
+    with torch.no_grad():
+        model.forward = partial(model.forward, img_metas=[[dict()]])
+
+        dynamic_axes = {
+            'input_img': {
+                0: 'batch',
+                2: 'width',
+                3: 'height'
+            },
+            'dets': {
+                0: 'batch',
+                1: 'num_dets',
+            },
+            'labels': {
+                0: 'batch',
+                1: 'num_dets',
+            },
+        }
+        torch.onnx.export(
+            model, [torch.rand(1, 3, 400, 500)],
+            'tmp.onnx',
+            output_names=['dets', 'labels'],
+            input_names=['input_img'],
+            keep_initializers_as_inputs=True,
+            do_constant_folding=True,
+            verbose=False,
+            opset_version=11,
+            dynamic_axes=dynamic_axes)
+
+
+def test_faster_onnx_export():
+
+    config_path = './configs/faster_rcnn/faster_rcnn_r50_fpn_1x_coco.py'
+    cfg = mmcv.Config.fromfile(config_path)
+    model = build_detector(cfg.model, test_cfg=cfg.get('test_cfg'))
+    with torch.no_grad():
+        model.forward = partial(model.forward, img_metas=[[dict()]])
+
+        dynamic_axes = {
+            'input_img': {
+                0: 'batch',
+                2: 'width',
+                3: 'height'
+            },
+            'dets': {
+                0: 'batch',
+                1: 'num_dets',
+            },
+            'labels': {
+                0: 'batch',
+                1: 'num_dets',
+            },
+        }
+        torch.onnx.export(
+            model, [torch.rand(1, 3, 400, 500)],
+            'tmp.onnx',
+            output_names=['dets', 'labels'],
+            input_names=['input_img'],
+            keep_initializers_as_inputs=True,
+            do_constant_folding=True,
+            verbose=False,
+            opset_version=11,
+            dynamic_axes=dynamic_axes)
 
 
 def retinanet_config():
@@ -68,12 +140,12 @@ def test_retina_head_forward():
     feats = [
         torch.rand(1, retina_model.in_channels, s // (2**(i + 2)),
                    s // (2**(i + 2)))  # [32, 16, 8, 4, 2]
-        for i in range(len(retina_model.anchor_generator.strides))
+        for i in range(len(retina_model.prior_generator.strides))
     ]
     ort_validate(retina_model.forward, feats)
 
 
-def test_retinanet_head_get_bboxes():
+def test_retinanet_head_onnx_export():
     """Test RetinaNet Head _get_bboxes() in torch and onnxruntime env."""
     retina_model = retinanet_config()
     s = 128
@@ -96,9 +168,9 @@ def test_retinanet_head_get_bboxes():
     cls_score = feats[:5]
     bboxes = feats[5:]
 
-    retina_model.get_bboxes = partial(
-        retina_model.get_bboxes, img_metas=img_metas, with_nms=False)
-    ort_validate(retina_model.get_bboxes, (cls_score, bboxes))
+    retina_model.onnx_export = partial(
+        retina_model.onnx_export, img_metas=img_metas, with_nms=False)
+    ort_validate(retina_model.onnx_export, (cls_score, bboxes))
 
 
 def yolo_config():
@@ -145,7 +217,7 @@ def test_yolov3_head_forward():
     ort_validate(yolo_model.forward, feats)
 
 
-def test_yolov3_head_get_bboxes():
+def test_yolov3_head_onnx_export():
     """Test yolov3 head get_bboxes() in torch and ort env."""
     yolo_model = yolo_config()
     s = 128
@@ -163,9 +235,9 @@ def test_yolov3_head_get_bboxes():
     yolo_head_data = 'yolov3_head_get_bboxes.pkl'
     pred_maps = mmcv.load(osp.join(data_path, yolo_head_data))
 
-    yolo_model.get_bboxes = partial(
-        yolo_model.get_bboxes, img_metas=img_metas, with_nms=False)
-    ort_validate(yolo_model.get_bboxes, pred_maps)
+    yolo_model.onnx_export = partial(
+        yolo_model.onnx_export, img_metas=img_metas, with_nms=False)
+    ort_validate(yolo_model.onnx_export, pred_maps)
 
 
 def fcos_config():
@@ -207,7 +279,7 @@ def test_fcos_head_forward():
     ort_validate(fcos_model.forward, feats)
 
 
-def test_fcos_head_get_bboxes():
+def test_fcos_head_onnx_export():
     """Test fcos head get_bboxes() in ort."""
     fcos_model = fcos_config()
     s = 128
@@ -231,9 +303,9 @@ def test_fcos_head_get_bboxes():
         for feat_size in [4, 8, 16, 32, 64]
     ]
 
-    fcos_model.get_bboxes = partial(
-        fcos_model.get_bboxes, img_metas=img_metas, with_nms=False)
-    ort_validate(fcos_model.get_bboxes, (cls_scores, bboxes, centerness))
+    fcos_model.onnx_export = partial(
+        fcos_model.onnx_export, img_metas=img_metas, with_nms=False)
+    ort_validate(fcos_model.onnx_export, (cls_scores, bboxes, centerness))
 
 
 def fsaf_config():
@@ -279,7 +351,7 @@ def test_fsaf_head_forward():
     ort_validate(fsaf_model.forward, feats)
 
 
-def test_fsaf_head_get_bboxes():
+def test_fsaf_head_onnx_export():
     """Test RetinaNet Head get_bboxes in torch and onnxruntime env."""
     fsaf_model = fsaf_config()
     s = 256
@@ -302,9 +374,9 @@ def test_fsaf_head_get_bboxes():
     cls_score = feats[:5]
     bboxes = feats[5:]
 
-    fsaf_model.get_bboxes = partial(
-        fsaf_model.get_bboxes, img_metas=img_metas, with_nms=False)
-    ort_validate(fsaf_model.get_bboxes, (cls_score, bboxes))
+    fsaf_model.onnx_export = partial(
+        fsaf_model.onnx_export, img_metas=img_metas, with_nms=False)
+    ort_validate(fsaf_model.onnx_export, (cls_score, bboxes))
 
 
 def ssd_config():
@@ -353,7 +425,7 @@ def test_ssd_head_forward():
     ort_validate(ssd_model.forward, feats)
 
 
-def test_ssd_head_get_bboxes():
+def test_ssd_head_onnx_export():
     """Test SSD Head get_bboxes in torch and onnxruntime env."""
     ssd_model = ssd_config()
     s = 300
@@ -376,6 +448,6 @@ def test_ssd_head_get_bboxes():
     cls_score = feats[:6]
     bboxes = feats[6:]
 
-    ssd_model.get_bboxes = partial(
-        ssd_model.get_bboxes, img_metas=img_metas, with_nms=False)
-    ort_validate(ssd_model.get_bboxes, (cls_score, bboxes))
+    ssd_model.onnx_export = partial(
+        ssd_model.onnx_export, img_metas=img_metas, with_nms=False)
+    ort_validate(ssd_model.onnx_export, (cls_score, bboxes))

@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 import copy
 import warnings
 
@@ -9,11 +10,10 @@ from mmcv.ops import nms
 
 from ..builder import HEADS
 from .guided_anchor_head import GuidedAnchorHead
-from .rpn_test_mixin import RPNTestMixin
 
 
 @HEADS.register_module()
-class GARPNHead(RPNTestMixin, GuidedAnchorHead):
+class GARPNHead(GuidedAnchorHead):
     """Guided-Anchor-based RPN head."""
 
     def __init__(self,
@@ -154,11 +154,11 @@ class GARPNHead(RPNTestMixin, GuidedAnchorHead):
             if cfg.min_bbox_size >= 0:
                 w = proposals[:, 2] - proposals[:, 0]
                 h = proposals[:, 3] - proposals[:, 1]
-                valid_inds = torch.nonzero(
-                    (w > cfg.min_bbox_size) & (h > cfg.min_bbox_size),
-                    as_tuple=False).squeeze()
-                proposals = proposals[valid_inds, :]
-                scores = scores[valid_inds]
+                valid_mask = (w > cfg.min_bbox_size) & (h > cfg.min_bbox_size)
+                if not valid_mask.all():
+                    proposals = proposals[valid_mask]
+                    scores = scores[valid_mask]
+
             # NMS in current level
             proposals, _ = nms(proposals, scores, cfg.nms.iou_threshold)
             proposals = proposals[:cfg.nms_post, :]

@@ -1,3 +1,4 @@
+# Copyright (c) OpenMMLab. All rights reserved.
 from abc import ABCMeta, abstractmethod
 
 import cv2
@@ -528,6 +529,21 @@ class BitmapMasks(BaseInstanceMasks):
         self = cls(masks, height=height, width=width)
         return self
 
+    def get_bboxes(self):
+        num_masks = len(self)
+        boxes = np.zeros((num_masks, 4), dtype=np.float32)
+        x_any = self.masks.any(axis=1)
+        y_any = self.masks.any(axis=2)
+        for idx in range(num_masks):
+            x = np.where(x_any[idx, :])[0]
+            y = np.where(y_any[idx, :])[0]
+            if len(x) > 0 and len(y) > 0:
+                # use +1 for x_max and y_max so that the right and bottom
+                # boundary of instance masks are fully included by the box
+                boxes[idx, :] = np.array([x[0], y[0], x[-1] + 1, y[-1] + 1],
+                                         dtype=np.float32)
+        return boxes
+
 
 class PolygonMasks(BaseInstanceMasks):
     """This class represents masks in the form of polygons.
@@ -637,8 +653,8 @@ class PolygonMasks(BaseInstanceMasks):
                 resized_poly = []
                 for p in poly_per_obj:
                     p = p.copy()
-                    p[0::2] *= w_scale
-                    p[1::2] *= h_scale
+                    p[0::2] = p[0::2] * w_scale
+                    p[1::2] = p[1::2] * h_scale
                     resized_poly.append(p)
                 resized_masks.append(resized_poly)
             resized_masks = PolygonMasks(resized_masks, *out_shape)
@@ -690,8 +706,8 @@ class PolygonMasks(BaseInstanceMasks):
                 for p in poly_per_obj:
                     # pycocotools will clip the boundary
                     p = p.copy()
-                    p[0::2] -= bbox[0]
-                    p[1::2] -= bbox[1]
+                    p[0::2] = p[0::2] - bbox[0]
+                    p[1::2] = p[1::2] - bbox[1]
                     cropped_poly_per_obj.append(p)
                 cropped_masks.append(cropped_poly_per_obj)
             cropped_masks = PolygonMasks(cropped_masks, h, w)
@@ -736,12 +752,12 @@ class PolygonMasks(BaseInstanceMasks):
                 p = p.copy()
                 # crop
                 # pycocotools will clip the boundary
-                p[0::2] -= bbox[0]
-                p[1::2] -= bbox[1]
+                p[0::2] = p[0::2] - bbox[0]
+                p[1::2] = p[1::2] - bbox[1]
 
                 # resize
-                p[0::2] *= w_scale
-                p[1::2] *= h_scale
+                p[0::2] = p[0::2] * w_scale
+                p[1::2] = p[1::2] * h_scale
                 resized_mask.append(p)
             resized_masks.append(resized_mask)
         return PolygonMasks(resized_masks, *out_shape)
@@ -944,6 +960,7 @@ class PolygonMasks(BaseInstanceMasks):
                 a list of vertices, in CCW order.
             """
             from scipy.stats import truncnorm
+
             # Generate around the unit circle
             cx, cy = (0.0, 0.0)
             radius = 1
@@ -1019,6 +1036,24 @@ class PolygonMasks(BaseInstanceMasks):
         self = cls(masks, height, width)
         return self
 
+    def get_bboxes(self):
+        num_masks = len(self)
+        boxes = np.zeros((num_masks, 4), dtype=np.float32)
+        for idx, poly_per_obj in enumerate(self.masks):
+            # simply use a number that is big enough for comparison with
+            # coordinates
+            xy_min = np.array([self.width * 2, self.height * 2],
+                              dtype=np.float32)
+            xy_max = np.zeros(2, dtype=np.float32)
+            for p in poly_per_obj:
+                xy = np.array(p).reshape(-1, 2).astype(np.float32)
+                xy_min = np.minimum(xy_min, np.min(xy, axis=0))
+                xy_max = np.maximum(xy_max, np.max(xy, axis=0))
+            boxes[idx, :2] = xy_min
+            boxes[idx, 2:] = xy_max
+
+        return boxes
+
 
 def polygon_to_bitmap(polygons, height, width):
     """Convert masks from the form of polygons to bitmaps.
@@ -1035,3 +1070,33 @@ def polygon_to_bitmap(polygons, height, width):
     rle = maskUtils.merge(rles)
     bitmap_mask = maskUtils.decode(rle).astype(np.bool)
     return bitmap_mask
+
+
+def bitmap_to_polygon(bitmap):
+    """Convert masks from the form of bitmaps to polygons.
+
+    Args:
+        bitmap (ndarray): masks in bitmap representation.
+
+    Return:
+        list[ndarray]: the converted mask in polygon representation.
+        bool: whether the mask has holes.
+    """
+    bitmap = np.ascontiguousarray(bitmap).astype(np.uint8)
+    # cv2.RETR_CCOMP: retrieves all of the contours and organizes them
+    #   into a two-level hierarchy. At the top level, there are external
+    #   boundaries of the components. At the second level, there are
+    #   boundaries of the holes. If there is another contour inside a hole
+    #   of a connected component, it is still put at the top level.
+    # cv2.CHAIN_APPROX_NONE: stores absolutely all the contour points.
+    outs = cv2.findContours(bitmap, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_NONE)
+    contours = outs[-2]
+    hierarchy = outs[-1]
+    if hierarchy is None:
+        return [], False
+    # hierarchy[i]: 4 elements, for the indexes of next, previous,
+    # parent, or nested contours. If there is no corresponding contour,
+    # it will be -1.
+    with_hole = (hierarchy.reshape(-1, 4)[:, 3] >= 0).any()
+    contours = [c.reshape(-1, 2) for c in contours]
+    return contours, with_hole

@@ -370,6 +370,7 @@ def _do_paste_mask(masks, boxes, img_h, img_w, skip_empty=True):
     # Compared to pasting them one by one,
     # this has more operations but is faster on COCO-scale dataset.
     device = masks.device
+    skip_empty = True
     if skip_empty:
         x0_int, y0_int = torch.clamp(
             boxes.min(dim=0).values.floor()[:2] - 1,
@@ -402,6 +403,7 @@ def _do_paste_mask(masks, boxes, img_h, img_w, skip_empty=True):
     gx = img_x[:, None, :].expand(N, img_y.size(1), img_x.size(1))
     gy = img_y[:, :, None].expand(N, img_y.size(1), img_x.size(1))
     grid = torch.stack([gx, gy], dim=3)
+    #grid = torch.unsqueeze(grid, dim=4)
 
     img_masks = F.grid_sample(
         masks.to(dtype=torch.float32), grid, align_corners=False)

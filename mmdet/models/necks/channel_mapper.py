@@ -52,7 +52,8 @@ class ChannelMapper(BaseModule):
                  act_cfg=dict(type='ReLU'),
                  num_outs=None,
                  init_cfg=dict(
-                     type='Xavier', layer='Conv2d', distribution='uniform')):
+                     type='Xavier', layer='Conv2d', distribution='uniform'),
+                 freeze=False):
         super(ChannelMapper, self).__init__(init_cfg)
         assert isinstance(in_channels, list)
         self.extra_convs = None
@@ -86,6 +87,17 @@ class ChannelMapper(BaseModule):
                         conv_cfg=conv_cfg,
                         norm_cfg=norm_cfg,
                         act_cfg=act_cfg))
+        if freeze:
+            self.freeze()
+
+    def freeze(self):
+        """Initialize the transformer weights."""
+        for p in self.parameters():
+            if p.dim() > 1:
+                p.requires_grad = False
+        for m in self.modules():
+            for param in m.parameters():
+                param.requires_grad = False
 
     def forward(self, inputs):
         """Forward function."""

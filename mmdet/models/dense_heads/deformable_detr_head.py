@@ -38,7 +38,8 @@ class DeformableDETRHead(DETRHead):
                  with_box_refine=False,
                  as_two_stage=False,
                  transformer=None,
-                 **kwargs):
+                 freeze=None,
+                 **kwargs,):
         self.with_box_refine = with_box_refine
         self.as_two_stage = as_two_stage
         if self.as_two_stage:
@@ -46,6 +47,25 @@ class DeformableDETRHead(DETRHead):
 
         super(DeformableDETRHead, self).__init__(
             *args, transformer=transformer, **kwargs)
+
+        if freeze:
+            self.freeze(freeze)
+
+    def freeze(self, modules):
+        from mmdet.models.utils.transformer import DeformableDetrTransformer
+        for m in self.modules():
+            if isinstance(m, DeformableDetrTransformer):
+                m.freeze(modules)
+            # else:
+            #     print(m)
+
+        # """Initialize the transformer weights."""
+        # for p in self.parameters():
+        #     if p.dim() > 1:
+        #         p.requires_grad = False
+        # for m in self.modules():
+        #     for param in m.parameters():
+        #         param.requires_grad = False
 
     def _init_layers(self):
         """Initialize classification branch and regression branch of head."""

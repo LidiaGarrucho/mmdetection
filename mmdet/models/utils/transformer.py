@@ -748,6 +748,22 @@ class DeformableDetrTransformer(Transformer):
         else:
             self.reference_points = nn.Linear(self.embed_dims, 2)
 
+    def freeze(self, modules):
+        """Initialize the transformer weights."""
+        # for p in self.parameters():
+        #     if p.dim() > 1:
+        #         p.requires_grad = False
+        if 'DetrTransformerEncoder' in modules:
+            for m in self.modules():
+                if isinstance(m, DetrTransformerEncoder):
+                    for param in m.parameters():
+                        param.requires_grad = False
+        if 'DeformableDetrTransformerDecoder' in modules:
+            for m in self.modules():
+                if isinstance(m, DeformableDetrTransformerDecoder):
+                    for param in m.parameters():
+                        param.requires_grad = False
+
     def init_weights(self):
         """Initialize the transformer weights."""
         for p in self.parameters():

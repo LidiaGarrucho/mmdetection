@@ -8,7 +8,7 @@ from mmcv.runner import BaseModule
 from torch.nn.modules.batchnorm import _BatchNorm
 
 from ..builder import BACKBONES
-from ..utils import ResLayer
+from ..utils import ResLayer, MixStyle
 
 
 class BasicBlock(BaseModule):
@@ -490,6 +490,8 @@ class ResNet(BaseModule):
 
         self.feat_dim = self.block.expansion * base_channels * 2**(
             len(self.stage_blocks) - 1)
+        # LIDIA
+        self.mixstyle = MixStyle(p=0.5, alpha=0.1)
 
     def make_stage_plugins(self, plugins, stage_idx):
         """Make plugins for ResNet ``stage_idx`` th stage.
@@ -641,6 +643,8 @@ class ResNet(BaseModule):
         for i, layer_name in enumerate(self.res_layers):
             res_layer = getattr(self, layer_name)
             x = res_layer(x)
+            if i in [0, 1]:
+                x = self.mixstyle(x)
             if i in self.out_indices:
                 outs.append(x)
         return tuple(outs)

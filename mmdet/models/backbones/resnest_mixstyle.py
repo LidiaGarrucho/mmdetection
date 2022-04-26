@@ -493,14 +493,11 @@ class ResNetMixStyle(BaseModule):
         self.feat_dim = self.block.expansion * base_channels * 2**(
             len(self.stage_blocks) - 1)
         # LIDIA
-        # if mixstyle:
-        #     self.mixstyle = MixStyle(p=0.5, alpha=0.1)
-        # else:
-        #     self.mixstyle = MixStyle(p=0, alpha=0.1)
-        # self.mixstyle_layers = mixstyle_layers
-
-        self.mixstyle = MixStyle(p=0, alpha=0.1)
-        self.mixstyle_layers = [0,1,2]
+        if mixstyle:
+            self.mixstyle = MixStyle(p=0.5, alpha=0.1)
+        else:
+            self.mixstyle = MixStyle(p=0, alpha=0.1)
+        self.mixstyle_layers = mixstyle_layers
 
     def make_stage_plugins(self, plugins, stage_idx):
         """Make plugins for ResNet ``stage_idx`` th stage.

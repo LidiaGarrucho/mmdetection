@@ -18,6 +18,8 @@ from mmdet.datasets import build_dataset
 from mmdet.models import build_detector
 from mmdet.utils import collect_env, get_root_logger, setup_multi_processes
 from configs.optimam.transforms import *
+from data_augmentation.transforms import *
+from data_augmentation.randconv_transform import *
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a detector')
@@ -195,6 +197,13 @@ def main():
             CLASSES=datasets[0].CLASSES)
     # add an attribute for visualization convenience
     model.CLASSES = datasets[0].CLASSES
+
+    pytorch_total_params = 0
+    for m in model.modules():
+        pytorch_total_params += sum(p.numel() for p in m.parameters() if p.requires_grad)
+    print(f'Trainble params: {pytorch_total_params}')
+    # exit(0)
+
     train_detector(
         model,
         datasets,

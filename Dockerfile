@@ -35,13 +35,18 @@ RUN pip install --no-cache-dir -r /mmdetection/requirements/build.txt
 RUN pip install --no-cache-dir -e /mmdetection/.
 RUN pip install scikit-image
 
-ENV GPU_SELECTED = "0"
-ENV EXEC_FILE = "/mmdetection/tools/train.py"
-ENV CONFIG_FILE = "/mmdetection/configs/optimam/def_detr.py"
-ENV SAVE_PATH = "/mmdetection/experiments/high_density/cyclegan/high_density_h800/HOLII"
-ENV CUDA_SEED = "999"
+ENV GPU_SELECTED="0"
+ENV EXEC_FILE="/mmdetection/tools/train.py"
+ENV CONFIG_FILE="/mmdetection/configs/optimam/def_detr.py"
+ENV SAVE_PATH="/mmdetection/experiments/high_density/cyclegan/high_density_h800/HOLII"
+ENV CUDA_SEED="999"
 
-RUN CUDA_LAUNCH_BLOCKING=1 CUDA_VISIBLE_DEVICES=$GPU_SELECTED OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 python $EXEC_FILE $CONFIG_FILE --work-dir $SAVE_PATH --seed $CUDA_SEED --deterministic
+# -e GPU_SELECTED -e SAVE_PATH -e CONFIG_FILE -e EXEC_FILE -e CUDA_SEED
+#docker run --shm-size=8g --gpus all -v /datasets:/datasets mmdet CUDA_LAUNCH_BLOCKING=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 CUDA_VISIBLE_DEVICES=$GPU_SELECTED python $EXEC_FILE $CONFIG_FILE --work-dir $SAVE_PATH --seed $CUDA_SEED --deterministic
+
+#VOLUME [ "/datasets" ]
+#RUN CUDA_VISIBLE_DEVICES=${GPU_SELECTED} CUDA_LAUNCH_BLOCKING=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 python ${EXEC_FILE} ${CONFIG_FILE} --work-dir ${SAVE_PATH} --seed ${CUDA_SEED} --deterministic
+
 # sudo docker run -it --rm --gpus all ubuntu nvidia-smi
 # sudo docker run --shm-size=8g --gpus all --rm -it -v /datasets:/datasets -v /home/lidia/source/mmdetection:/test mmdetection_t0
 # git config --global --add safe.directory /test

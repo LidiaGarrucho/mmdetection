@@ -50,7 +50,8 @@ RESIZE_PARAM = 1
 #LANDMARKS = '/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/optimam_train_hologic_landmarks.pth'
 #LANDMARKS = '/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/optimam_train_hologic_mass_data_aug_high_density.pth'
 #LANDMARKS = '/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/data_aug/optimam_bcdr_data_aug_mass_train_set.pth'
-LANDMARKS = '/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/data_aug/optimam_bcdr_no_data_aug_mass_train_set.pth'
+#LANDMARKS = '/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/data_aug/optimam_bcdr_no_data_aug_mass_train_set.pth'
+LANDMARKS = '/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/optimam_hologic_data_aug_mass_train_set.pth'
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -155,10 +156,15 @@ data = dict(
         pipeline=train_pipeline,
         img_prefix='',
         classes=classes,
+        #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/OPTIMAM_HOLOGIC_hologic_mass_no_data_aug_train.json'),
+        #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/OPTIMAM_HOLOGIC_hologic_mass_data_aug_acr1_study_lvl_train.json'),
+        ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/OPTIMAM_HOLOGIC_hologic_mass_data_aug_acr12_study_lvl_train.json'),
+        #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/OPTIMAM_HOLOGIC_hologic_mass_data_aug_acr123_study_lvl_train.json'),
+
         #ann_file='/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_mass_train.json'),
         #ann_file=f'/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_mass_only_data_aug_high_density_train.json'),
         #ann_file=f'/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/data_aug/OPTIMAM_HOLOGIC_mass_breast_density_train.json'),
-        ann_file='/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/data_aug/OPTIMAM_HOLOGIC_mass_breast_density_train_no_aug.json'),
+        #ann_file='/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/data_aug/OPTIMAM_HOLOGIC_mass_breast_density_train_no_aug.json'),
         #ann_file='/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_HOLOGIC_finetune_train.json'),
         #ann_file='/home/lidia-garrucho/datasets/BCDR/cropped/detection/masses/BCDR_mass_train.json'),
         #ann_file='/home/lidia-garrucho/datasets/BCDR/cropped/detection/masses/BCDR_mass_train_4_clients.json'),
@@ -172,8 +178,13 @@ data = dict(
         pipeline=test_pipeline,
         img_prefix='',
         classes=classes,
+        #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/OPTIMAM_HOLOGIC_hologic_mass_no_data_aug_val.json'),
+        #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/OPTIMAM_HOLOGIC_hologic_mass_data_aug_acr1_study_lvl_val.json'),
+        ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/OPTIMAM_HOLOGIC_hologic_mass_data_aug_acr12_study_lvl_val.json'),
+        #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/OPTIMAM_HOLOGIC_hologic_mass_data_aug_acr123_study_lvl_val.json'),
+
         #ann_file='/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_mass_val.json'),
-        ann_file='/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/data_aug/OPTIMAM_HOLOGIC_mass_breast_density_val.json'),
+        #ann_file='/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/data_aug/OPTIMAM_HOLOGIC_mass_breast_density_val.json'),
         #ann_file='/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_HOLOGIC_finetune_val.json'),
         #ann_file='/home/lidia-garrucho/datasets/BCDR/cropped/detection/masses/BCDR_mass_val.json'),
         #ann_file='/home/lidia-garrucho/datasets/INBREAST/AllPNG_cropped/detection/masses/INBreast_mass_val.json'),
@@ -185,8 +196,13 @@ data = dict(
         pipeline=test_pipeline,
         img_prefix='',
         classes=classes,
+        #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/OPTIMAM_HOLOGIC_hologic_mass_no_data_aug_val.json'))
+        #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/OPTIMAM_HOLOGIC_hologic_mass_data_aug_acr1_study_lvl_val.json'))
+        ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/OPTIMAM_HOLOGIC_hologic_mass_data_aug_acr12_study_lvl_val.json'))
+        #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/OPTIMAM_HOLOGIC_hologic_mass_data_aug_acr123_study_lvl_val.json'))
+
         #ann_file='/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_mass_test.json'))
-        ann_file='/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/data_aug/OPTIMAM_HOLOGIC_mass_breast_density_val.json'))
+        #ann_file='/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/data_aug/OPTIMAM_HOLOGIC_mass_breast_density_val.json'))
         #ann_file='/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_HOLOGIC_finetune_test.json'))
         #ann_file='/home/lidia-garrucho/datasets/BCDR/cropped/detection/masses/BCDR_mass_test.json'))
         #ann_file='/home/lidia-garrucho/datasets/INBREAST/AllPNG_cropped/detection/masses/INBreast_mass_test.json'))
@@ -230,7 +246,7 @@ optimizer = dict(
         }))
 optimizer_config = dict(grad_clip=dict(max_norm=0.1, norm_type=2))
 lr_config = dict(policy='step', step=[30])
-runner = dict(type='EpochBasedRunner', max_epochs=60)
+runner = dict(type='EpochBasedRunner', max_epochs=50)
 
 # URL http://download.openmmlab.com/mmdetection/v2.0/
 
@@ -241,3 +257,17 @@ runner = dict(type='EpochBasedRunner', max_epochs=60)
 #python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr_aug.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/hologic/mass/def_detr/new_high_bcdr_seed_42 --seed 42
 #python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr_aug.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/hologic/mass/def_detr/no_aug_high_bcdr_seed_33 --seed 33
 #python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr_aug.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/hologic/mass/def_detr/no_aug_high_bcdr_seed_42 --seed 42
+
+# python mmdet/utils/collect_env.py
+# Check install: python -c 'import mmcv; import mmcv.ops'
+
+# URL http://download.openmmlab.com/mmdetection/v2.0/
+# CUDA_LAUNCH_BLOCKING=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
+# OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=${PYTHONPATH}:./ python tools/train.py /home/lidia/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia/source/mmdetection/experiments/high_density/cyclegan/high_density_h800/no_data_aug --seed 999 --deterministic
+# OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=${PYTHONPATH}:./ python tools/train.py /home/lidia/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia/source/mmdetection/experiments/high_density/cyclegan/high_density_h800/no_data_aug_seed42 --seed 42 --deterministic
+# CUDA_VISIBLE_DEVICES=0 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=${PYTHONPATH}:./ python tools/train.py /home/lidia/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia/source/mmdetection/experiments/high_density/cyclegan/high_density_h800/no_data_aug_seed999 --seed 999 --deterministic
+# CUDA_LAUNCH_BLOCKING=1 CUDA_VISIBLE_DEVICES=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=${PYTHONPATH}:./ python tools/train.py /home/lidia/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia/source/mmdetection/experiments/high_density/cyclegan/high_density_h800/data_aug_acr12_seed999 --seed 999 --deterministic
+# CUDA_VISIBLE_DEVICES=0 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 python tools/train.py ./configs/optimam/def_detr.py --work-dir /test/experiments/high_density/cyclegan/high_density_h800/HOLII --seed 999 --deterministic
+# PYTHONPATH=${PYTHONPATH}:./ python tools/train.py ./configs/optimam/def_detr.py --work-dir /test/experiments/test/gpu0 --seed 999 --deterministic
+
+#OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=${PYTHONPATH}:./ python tools/train.py /home/lidia/source/mmdetection/configs/optimam/def_detr_aug.py --work-dir /home/lidia/source/mmdetection/experiments/high_density/cyclegan/high_density_h800/no_data_aug_seed999_new --seed 999 --deterministic

@@ -1,3 +1,6 @@
+# base = [
+# '../base/datasets/coco_detection.py', '../base/default_runtime.py'
+# ]
 # The new config inherits a base config to highlight the necessary modification
 # Deformable Transformers
 #_base_ = '../deformable_detr/deformable_detr_r50_16x2_50e_coco.py'
@@ -362,20 +365,39 @@ albu_train_transforms = [
     #dict(type='InvertImg', p=0.2)
 ]
 model = dict(
-    backbone=dict(
-        type='ResNetMixStyle',
-        depth=50,
-        num_stages=4,
-        out_indices=(1, 2, 3), 
-        frozen_stages=1,
-        #frozen_stages=4,
-        norm_cfg=dict(type='BN', requires_grad=False),
-        norm_eval=True,
-        style='pytorch',
-        init_cfg=dict(type='Pretrained', checkpoint='torchvision://resnet50'),
-        #init_cfg=None,
-        mixstyle=True,
-        mixstyle_layers=[0,1,2]),
+    # backbone=dict(
+    #     type='ResNetMixStyle',
+    #     depth=50,
+    #     num_stages=4,
+    #     out_indices=(1, 2, 3), 
+    #     frozen_stages=1,
+    #     #frozen_stages=4,
+    #     norm_cfg=dict(type='BN', requires_grad=False),
+    #     norm_eval=True,
+    #     style='pytorch',
+    #     init_cfg=dict(type='Pretrained', checkpoint='torchvision://resnet50'),
+    #     #init_cfg=None,
+    #     mixstyle=True,
+    #     mixstyle_layers=[0,1,2]),
+        backbone=dict(
+        type='SwinTransformer',
+        frozen_stages=1, # LIDIA: same as resnet frozen_stages (int): Stages to be frozen (stop grad and set eval mode). Default: -1 (-1 means not freezing any parameters).
+        embed_dims=96,
+        depths=[2, 2, 6, 2],
+        num_heads=[3, 6, 12, 24],
+        window_size=7,
+        mlp_ratio=4,
+        qkv_bias=True,
+        qk_scale=None,
+        drop_rate=0.,
+        attn_drop_rate=0.,
+        drop_path_rate=0.2,
+        patch_norm=True,
+        out_indices=(0,1,2,3),
+        with_cp=False,
+        convert_weights=True,
+        init_cfg=dict(type='Pretrained', checkpoint='checkpoints/swin_tiny_patch4_window7_224.pth')
+        ),
         neck=dict(freeze=True),
         bbox_head=dict(num_classes=1, with_box_refine=True, freeze=None))#, 'DeformableDetrTransformerDecoder']))
         #bbox_head=dict(num_classes=1, with_box_refine=True, freeze=['DetrTransformerEncoder', 'DeformableDetrTransformerDecoder']))
@@ -396,7 +418,7 @@ train_pipeline = [
     # dict(type='RandConvAug', kernel_size=(1,3,5), mixing=True, identity_prob=0.5, mixing_alpha=0.5,
     #         img_scale=(LONGER_EDGE, SHORTER_EDGE), img_std=[58.395, 57.12, 57.375], img_mean=[123.675, 116.28, 103.53],
     #         in_channels=1, to_rgb=False), #to_rgb=True means no Hstd
-    dict(type='Low2HighBreastDensityAug', checkpoint_name='high_density_h800', img_scale=(LONGER_EDGE, SHORTER_EDGE)),
+    # dict(type='Low2HighBreastDensityAug', checkpoint_name='high_density_h800', img_scale=(LONGER_EDGE, SHORTER_EDGE)),
     dict(type='ImageStandardisationRGB', landmarks_path=LANDMARKS),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(
@@ -438,22 +460,22 @@ train_pipeline = [
                     keep_ratio=True)
             ]
         ]),
-    dict(
-        type='Albu',
-        transforms=albu_train_transforms,
-        bbox_params=dict(
-            type='BboxParams',
-            format='pascal_voc',
-            label_fields=['gt_labels'],
-            min_visibility=0.0,
-            filter_lost_elements=True),
-        keymap={
-            'img': 'image',
-            'gt_masks': 'masks',
-            'gt_bboxes': 'bboxes'
-        },
-        update_pad_shape=False,
-        skip_img_without_anno=True),
+    # dict(
+    #     type='Albu',
+    #     transforms=albu_train_transforms,
+    #     bbox_params=dict(
+    #         type='BboxParams',
+    #         format='pascal_voc',
+    #         label_fields=['gt_labels'],
+    #         min_visibility=0.0,
+    #         filter_lost_elements=True),
+    #     keymap={
+    #         'img': 'image',
+    #         'gt_masks': 'masks',
+    #         'gt_bboxes': 'bboxes'
+    #     },
+    #     update_pad_shape=False,
+    #     skip_img_without_anno=True),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size_divisor=1),
     dict(type='DefaultFormatBundle'),
@@ -546,10 +568,14 @@ load_from = 'checkpoints/deformable_detr_refine_r50_16x2_50e_coco_20210419_22050
 #load_from = 'experiments/optimam/hologic/mass/def_detr/mixstyle_r123_cutout_t2_hstd/epoch_23.pth'
 #load_from = 'experiments/optimam/hologic/mass/def_detr/mixstyle_r123_cutout_t2_randconv_k123_hstd/epoch_12.pth'
 
+# Don't load COCO pretrained
+# load_from = None
+# resume_from = None
+
 # optimizer
 optimizer = dict(
     type='AdamW',
-    lr=2.5e-05, #lr=2e-4, 2 images x 8 GPU: 2 images x 1 GPU
+    lr=2.5e-05, #lr=2e-4, 2 images x 8 GPU: 2 images x 1 GPU (Internet: lr=2e-4/16 if 2 batch size and 2 workers per GPU)
     #lr=2.5e-05,
     #lr=1e-04,
     weight_decay=0.0001,
@@ -559,51 +585,23 @@ optimizer = dict(
             'sampling_offsets': dict(lr_mult=0.1),
             'reference_points': dict(lr_mult=0.1)
         }))
-optimizer_config = dict(grad_clip=dict(max_norm=0.1, norm_type=2))
+# optimizer_config = dict(grad_clip=dict(max_norm=0.1, norm_type=2))
+optimizer_config = dict(grad_clip=dict(max_norm=0.2, norm_type=2))
 lr_config = dict(policy='step', step=[30])
 runner = dict(type='EpochBasedRunner', max_epochs=60)
+# TODO add this IOU thresholds in all the models
+# checkpoint_config = dict(interval=5)
+# log_config = dict(
+# interval=267,
+# hooks=[
+# dict(type='TextLoggerHook')
+# ])
+# evaluation = dict(
+#  interval=1, # Evaluation interval
+#  save_best='bbox_mAP',
+#  iou_thrs=[0.1, 0.15, 0.20, 0.25, 0.50]
+# )
+#Check Issue using OPTIMAM: https://github.com/open-mmlab/mmdetection/issues/7885
 
-# URL http://download.openmmlab.com/mmdetection/v2.0/
 
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/hologic/mass/def_detr/hstd --seed 999
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/hologic/def_detr/refine_nyul --seed 999
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/hologic/def_detr/augmix_hstd --seed 999
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/hologic/mass/def_detr/mixstyle_res12_hstd_no_pretrained --seed 999
-
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/bcdr/mass/def_detr/hstd_mixstyle_res123_4_clients --seed 999
-
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/inbreast/mass/def_detr/hstd_mixstyle_res123 --seed 999
-
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/philips_sweden/mass/def_detr/hstd_mixstyle_res123 --seed 999
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/siemens/mass/def_detr/hstd_mixstyle_res123 --seed 999
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/GE/mass/def_detr/hstd_mixstyle_res123 --seed 999
-
-#Albumentations
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/hologic/mass/def_detr/albumentations_test0 --seed 999
-
-#RandConv
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/hologic/mass/def_detr/randconv_k3_p05_test0 --seed 999
-
-#Cutout
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/hologic/mass/def_detr/cutout_test0 --seed 999
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/hologic/mass/def_detr/cutout_test1_mixstyle --seed 999
-
-# Baseline + Hstd: Finetune
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/hologic/mass/def_detr/hstd/finetune --seed 999
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/GE/mass/def_detr/hstd/finetune --seed 999
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/philips_sweden/mass/def_detr/hstd/finetune --seed 999
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/siemens/mass/def_detr/hstd/finetune --seed 999
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/bcdr/mass/def_detr/hstd/finetune --seed 999
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/inbreast/mass/def_detr/hstd/finetune --seed 999
-
-# Combined Hstd MixStyle r123 + Cutout t2 10%
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/hologic/mass/def_detr/mixstyle_r123_cutout_t2_hstd --seed 999
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/hologic/mass/def_detr/mixstyle_r123_cutout_t2_randconv_k123_hstd --seed 999
-
-# mixstyle_r123_cutout_t2_hstd: Finetune
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/hologic/mass/def_detr/mixstyle_r123_cutout_t2_hstd/finetune --seed 999
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/GE/mass/def_detr/mixstyle_r123_cutout_t2_hstd/finetune --seed 999
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/philips_sweden/mass/def_detr/mixstyle_r123_cutout_t2_hstd/finetune --seed 999
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/siemens/mass/def_detr/mixstyle_r123_cutout_t2_hstd/finetune --seed 999
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/bcdr/mass/def_detr/mixstyle_r123_cutout_t2_hstd/finetune --seed 999
-#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/inbreast/mass/def_detr/mixstyle_r123_cutout_t2_hstd/finetune --seed 999
+#OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=${PYTHONPATH}:./ python tools/train.py /home/lidia/source/mmdetection/configs/optimam/def_detr_swin.py --work-dir /home/lidia/source/mmdetection/experiments/optimam/hologic/mass/def_detr/swin_backbone/hstd_only_seed_999 --seed 999 --deterministic

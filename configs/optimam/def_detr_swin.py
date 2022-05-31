@@ -4,7 +4,10 @@
 # The new config inherits a base config to highlight the necessary modification
 # Deformable Transformers
 #_base_ = '../deformable_detr/deformable_detr_r50_16x2_50e_coco.py'
-_base_ = '../deformable_detr/deformable_detr_refine_r50_16x2_50e_coco.py'
+
+# IMPORTANT: use this config for swin backbone
+_base_ = '../deformable_detr/deformable_detr_r50_16x2_50e_coco_refine_swin_backbone.py'
+
 # _base_ = '../deformable_detr/deformable_detr_twostage_refine_r50_16x2_50e_coco.py'
 #Albumentations code example
 #configs/albu_example/mask_rcnn_r50_fpn_albu_1x_coco.py
@@ -398,15 +401,23 @@ model = dict(
         convert_weights=True,
         init_cfg=dict(type='Pretrained', checkpoint='checkpoints/swin_tiny_patch4_window7_224.pth')
         ),
-        neck=dict(freeze=True),
+        # neck=dict(freeze=True),
+        neck=dict(
+        type='ChannelMapper',
+        in_channels=[96, 192, 384, 768],
+        kernel_size=1,
+        out_channels=256,
+        act_cfg=None,
+        norm_cfg=dict(type='GN', num_groups=32),
+        num_outs=4),
         bbox_head=dict(num_classes=1, with_box_refine=True, freeze=None))#, 'DeformableDetrTransformerDecoder']))
         #bbox_head=dict(num_classes=1, with_box_refine=True, freeze=['DetrTransformerEncoder', 'DeformableDetrTransformerDecoder']))
 
 LONGER_EDGE = 1333 #2100
 SHORTER_EDGE = 800 #1700
 RESIZE_PARAM = 1 # 1
-#LANDMARKS = '/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/optimam_train_hologic_landmarks.pth'
-LANDMARKS = '/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/optimam_train_hologic_landmarks.pth'
+# LANDMARKS = '/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/optimam_train_hologic_landmarks.pth'
+# LANDMARKS = '/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/optimam_train_hologic_landmarks.pth'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 # train_pipeline, NOTE the img_scale and the Pad's size_divisor is different
@@ -419,7 +430,7 @@ train_pipeline = [
     #         img_scale=(LONGER_EDGE, SHORTER_EDGE), img_std=[58.395, 57.12, 57.375], img_mean=[123.675, 116.28, 103.53],
     #         in_channels=1, to_rgb=False), #to_rgb=True means no Hstd
     # dict(type='Low2HighBreastDensityAug', checkpoint_name='high_density_h800', img_scale=(LONGER_EDGE, SHORTER_EDGE)),
-    dict(type='ImageStandardisationRGB', landmarks_path=LANDMARKS),
+    # dict(type='ImageStandardisationRGB', landmarks_path=LANDMARKS),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(
         type='AutoAugment',
@@ -486,7 +497,7 @@ train_pipeline = [
 # whether we use the default setting or use size_divisor=1.
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='ImageStandardisationRGB', landmarks_path=LANDMARKS),
+    # dict(type='ImageStandardisationRGB', landmarks_path=LANDMARKS),
     dict(
         type='MultiScaleFlipAug',
         img_scale=(LONGER_EDGE, SHORTER_EDGE),
@@ -510,8 +521,8 @@ data = dict(
         pipeline=train_pipeline,
         img_prefix='',
         classes=classes,
-        #ann_file='/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_mass_train.json'),
-        ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_mass_train.json'),
+        ann_file='/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_mass_train.json'),
+        #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_mass_train.json'),
         #ann_file='/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_HOLOGIC_finetune_train.json'),
         #ann_file='/home/lidia-garrucho/datasets/BCDR/cropped/detection/masses/BCDR_mass_train.json'),
         #ann_file='/home/lidia-garrucho/datasets/BCDR/cropped/detection/masses/BCDR_mass_train_4_clients.json'),
@@ -525,8 +536,8 @@ data = dict(
         pipeline=test_pipeline,
         img_prefix='',
         classes=classes,
-        # ann_file='/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_mass_val.json'),
-        ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_mass_val.json'),
+        ann_file='/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_mass_val.json'),
+        #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_mass_val.json'),
         #ann_file='/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_HOLOGIC_finetune_val.json'),
         #ann_file='/home/lidia-garrucho/datasets/BCDR/cropped/detection/masses/BCDR_mass_val.json'),
         #ann_file='/home/lidia-garrucho/datasets/INBREAST/AllPNG_cropped/detection/masses/INBreast_mass_val.json'),
@@ -538,8 +549,8 @@ data = dict(
         pipeline=test_pipeline,
         img_prefix='',
         classes=classes,
-        # ann_file='/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_mass_test.json'))
-        ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_mass_test.json'))
+        ann_file='/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_mass_test.json'))
+        #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_mass_test.json'))
         #ann_file='/home/lidia-garrucho/datasets/OPTIMAM/png_screening_cropped_fixed/detection/mask_rcnn/OPTIMAM_HOLOGIC_finetune_test.json'))
         #ann_file='/home/lidia-garrucho/datasets/BCDR/cropped/detection/masses/BCDR_mass_test.json'))
         #ann_file='/home/lidia-garrucho/datasets/INBREAST/AllPNG_cropped/detection/masses/INBreast_mass_test.json'))
@@ -568,10 +579,6 @@ load_from = 'checkpoints/deformable_detr_refine_r50_16x2_50e_coco_20210419_22050
 #load_from = 'experiments/optimam/hologic/mass/def_detr/mixstyle_r123_cutout_t2_hstd/epoch_23.pth'
 #load_from = 'experiments/optimam/hologic/mass/def_detr/mixstyle_r123_cutout_t2_randconv_k123_hstd/epoch_12.pth'
 
-# Don't load COCO pretrained
-# load_from = None
-# resume_from = None
-
 # optimizer
 optimizer = dict(
     type='AdamW',
@@ -585,8 +592,8 @@ optimizer = dict(
             'sampling_offsets': dict(lr_mult=0.1),
             'reference_points': dict(lr_mult=0.1)
         }))
-# optimizer_config = dict(grad_clip=dict(max_norm=0.1, norm_type=2))
-optimizer_config = dict(grad_clip=dict(max_norm=0.2, norm_type=2))
+optimizer_config = dict(grad_clip=dict(max_norm=0.1, norm_type=2))
+# optimizer_config = dict(grad_clip=dict(max_norm=0.2, norm_type=2))
 lr_config = dict(policy='step', step=[30])
 runner = dict(type='EpochBasedRunner', max_epochs=60)
 # TODO add this IOU thresholds in all the models
@@ -605,3 +612,9 @@ runner = dict(type='EpochBasedRunner', max_epochs=60)
 
 
 #OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=${PYTHONPATH}:./ python tools/train.py /home/lidia/source/mmdetection/configs/optimam/def_detr_swin.py --work-dir /home/lidia/source/mmdetection/experiments/optimam/hologic/mass/def_detr/swin_backbone/hstd_only_seed_999 --seed 999 --deterministic
+# No Hstd
+#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr_swin.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/hologic/mass/def_detr/swin_backbone/no_hstd_seed_999 --seed 999 --deterministic
+# Only Hstd
+#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr_swin.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/hologic/mass/def_detr/swin_backbone/hstd_only_seed_999 --seed 999 --deterministic
+# Hstd + Cutout
+#python tools/train.py /home/lidia-garrucho/source/mmdetection/configs/optimam/def_detr_swin.py --work-dir /home/lidia-garrucho/source/mmdetection/experiments/optimam/hologic/mass/def_detr/swin_backbone/hstd_cutout_seed_999 --seed 999 --deterministic

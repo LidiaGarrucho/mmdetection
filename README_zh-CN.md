@@ -73,13 +73,13 @@ MMDetection 是一个基于 PyTorch 的目标检测开源工具箱。它是 [Ope
 
 ## 更新日志
 
-最新的 **2.22.0** 版本已经在 2022.02.24 发布:
+最新的 **2.24.1** 版本已经在 2022.04.30 发布:
 
-- 支持 [MaskFormer](configs/maskformer)，[DyHead](configs/dyhead)，[OpenImages Dataset](configs/openimages) 和 [TIMM backbone](configs/timm_example)
-- 支持全景分割可视化
-- 发布了一个在目标检测任务中使用 ResNet 的好方法，它是由 [ResNet Strikes Back](https://arxiv.org/abs/2110.00476) 预训练的，并且能稳定的在 RetinaNet, Faster/Mask/Cascade Mask R-CNN 上带来约 3-4 mAP 的提升
+- 支持算法 [Simple Copy Paste](configs/simple_copy_paste)
+- 支持训练时根据总 batch 数自动缩放学习率
+- 支持类别可知的采样器来提高算法在 OpenImages 数据集上的性能
 
-如果想了解更多版本更新细节和历史信息，请阅读[更新日志](docs/changelog.md)。
+如果想了解更多版本更新细节和历史信息，请阅读[更新日志](docs/en/changelog.md)。
 
 如果想了解 MMDetection 不同版本之间的兼容性, 请参考[兼容性说明文档](docs/zh_cn/compatibility.md)。
 
@@ -142,6 +142,7 @@ MMDetection 是一个基于 PyTorch 的目标检测开源工具箱。它是 [Ope
             <li><a href="configs/yolox">YOLOX (CVPR'2021)</a></li>
             <li><a href="configs/deformable_detr">Deformable DETR (ICLR'2021)</a></li>
             <li><a href="configs/tood">TOOD (ICCV'2021)</a></li>
+            <li><a href="configs/centripetalnet">CentripetalNet (CVPR'2020)</a></li>
       </ul>
       </td>
       <td>
@@ -162,6 +163,8 @@ MMDetection 是一个基于 PyTorch 的目标检测开源工具箱。它是 [Ope
       <td>
         <ul>
           <li><a href="configs/panoptic_fpn">Panoptic FPN (CVPR'2019)</a></li>
+          <li><a href="configs/maskformer">MaskFormer (NeurIPS'2021)</a></li>
+          <li><a href="configs/mask2former">Mask2Former (ArXiv'2021)</a></li>
         </ul>
       </td>
       <td>
@@ -226,6 +229,7 @@ MMDetection 是一个基于 PyTorch 的目标检测开源工具箱。它是 [Ope
         <li><a href="configs/swin">Swin (CVPR'2021)</a></li>
         <li><a href="configs/pvt">PVTv2 (ArXiv'2021)</a></li>
         <li><a href="configs/resnet_strikes_back">ResNet strikes back (ArXiv'2021)</a></li>
+        <li><a href="configs/efficientnet">EfficientNet (ArXiv'2021)</a></li>
       </ul>
       </td>
       <td>

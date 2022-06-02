@@ -146,3 +146,4 @@ runner = dict(type='EpochBasedRunner', max_epochs=40)
 # CUDA_LAUNCH_BLOCKING=1 CUDA_VISIBLE_DEVICES=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=${PYTHONPATH}:./ python tools/train.py /home/lidia/source/mmdetection/configs/optimam/def_detr.py --work-dir /home/lidia/source/mmdetection/experiments/high_density/cyclegan/high_density_h800/data_aug_acr12_seed999 --seed 999 --deterministic
 # CUDA_VISIBLE_DEVICES=0 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 python tools/train.py ./configs/optimam/def_detr.py --work-dir /test/experiments/high_density/cyclegan/high_density_h800/HOLII --seed 999 --deterministic
 # PYTHONPATH=${PYTHONPATH}:./ python tools/train.py ./configs/optimam/def_detr.py --work-dir /test/experiments/test/gpu0 --seed 999 --deterministic
+

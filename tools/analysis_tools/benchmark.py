@@ -14,7 +14,10 @@ from mmdet.datasets import (build_dataloader, build_dataset,
                             replace_ImageToTensor)
 from mmdet.models import build_detector
 from mmdet.utils import update_data_root
-
+# LIDIA
+from configs.optimam.transforms import *
+from data_augmentation.transforms import *
+from data_augmentation.randconv_transform import *
 
 def parse_args():
     parser = argparse.ArgumentParser(description='MMDet benchmark a model')

@@ -37,7 +37,7 @@ model = dict(
 LONGER_EDGE = 1333
 SHORTER_EDGE = 800
 RESIZE_PARAM = 1
-#LANDMARKS = '/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/optimam_hologic_data_aug_mass_train_set.pth'
+LANDMARKS = '/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/optimam_hologic_data_aug_mass_train_set.pth'
 
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
@@ -51,7 +51,7 @@ train_pipeline = [
     #         img_scale=(LONGER_EDGE, SHORTER_EDGE), img_std=[58.395, 57.12, 57.375], img_mean=[123.675, 116.28, 103.53],
     #         in_channels=1, to_rgb=False), #to_rgb=True means no Hstd
     #dict(type='Low2HighBreastDensityAug', checkpoint_name='high_density_h800', img_scale=(LONGER_EDGE, SHORTER_EDGE)),
-    #dict(type='ImageStandardisationRGB', landmarks_path=LANDMARKS),
+    dict(type='ImageStandardisationRGB', landmarks_path=LANDMARKS),
     dict(type='RandomFlip', flip_ratio=0.5),
     dict(
         type='AutoAugment',
@@ -118,7 +118,7 @@ train_pipeline = [
 # whether we use the default setting or use size_divisor=1.
 test_pipeline = [
     dict(type='LoadImageFromFile'),
-    #dict(type='ImageStandardisationRGB', landmarks_path=LANDMARKS),
+    dict(type='ImageStandardisationRGB', landmarks_path=LANDMARKS),
     dict(
         type='MultiScaleFlipAug',
         img_scale=(LONGER_EDGE, SHORTER_EDGE),
@@ -142,7 +142,7 @@ data = dict(
         pipeline=train_pipeline,
         img_prefix='',
         classes=classes,
-        #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/OPTIMAM_HOLOGIC_hologic_mass_no_data_aug_train.json'),
+        ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/OPTIMAM_HOLOGIC_hologic_mass_no_data_aug_train.json'),
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/OPTIMAM_HOLOGIC_hologic_mass_data_aug_acr12_study_lvl_train.json'),
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_acr12_csaw/OPTIMAM_HOLOGIC_mass_acr123_data_aug_acr12_csaw_train.json'),
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_acr12_csaw_bcdr_optimam/OPTIMAM_HOLOGIC_mass_acr123_data_aug_acr12_csaw_bcdr_optimam_train.json'),
@@ -150,7 +150,7 @@ data = dict(
         
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_all_csaw_bcdr_optimam/OPTIMAM_HOLOGIC_mass_acr123_data_aug_all_csaw_bcdr_optimam_train.json'),
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_all_csaw_optimam/OPTIMAM_HOLOGIC_mass_acr123_data_aug_all_csaw_optimam_train.json'),
-        ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_all_optimam/OPTIMAM_HOLOGIC_mass_acr123_data_aug_all_optimam_train.json'),
+        #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_all_optimam/OPTIMAM_HOLOGIC_mass_acr123_data_aug_all_optimam_train.json'),
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_all_csaw/OPTIMAM_HOLOGIC_mass_acr123_data_aug_all_csaw_train.json'),
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_all_bcdr/OPTIMAM_HOLOGIC_mass_acr123_data_aug_all_bcdr_train.json'),
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_all_bcdr_optimam/OPTIMAM_HOLOGIC_mass_acr123_data_aug_all_bcdr_optimam_train.json'),
@@ -159,7 +159,7 @@ data = dict(
         pipeline=test_pipeline,
         img_prefix='',
         classes=classes,
-        #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/OPTIMAM_HOLOGIC_hologic_mass_no_data_aug_val.json'),
+        ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/OPTIMAM_HOLOGIC_hologic_mass_no_data_aug_val.json'),
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/OPTIMAM_HOLOGIC_hologic_mass_data_aug_acr12_study_lvl_val.json'),
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_acr12_csaw/OPTIMAM_HOLOGIC_mass_acr123_data_aug_acr12_csaw_val.json'),
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_acr12_csaw_bcdr_optimam/OPTIMAM_HOLOGIC_mass_acr123_data_aug_acr12_csaw_bcdr_optimam_val.json'),
@@ -167,7 +167,7 @@ data = dict(
         
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_all_csaw_bcdr_optimam/OPTIMAM_HOLOGIC_mass_acr123_data_aug_all_csaw_bcdr_optimam_val.json'), 
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_all_csaw_optimam/OPTIMAM_HOLOGIC_mass_acr123_data_aug_all_csaw_optimam_val.json'),
-        ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_all_optimam/OPTIMAM_HOLOGIC_mass_acr123_data_aug_all_optimam_val.json'),
+        #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_all_optimam/OPTIMAM_HOLOGIC_mass_acr123_data_aug_all_optimam_val.json'),
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_all_csaw/OPTIMAM_HOLOGIC_mass_acr123_data_aug_all_csaw_val.json'),
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_all_bcdr/OPTIMAM_HOLOGIC_mass_acr123_data_aug_all_bcdr_val.json'),
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_all_bcdr_optimam/OPTIMAM_HOLOGIC_mass_acr123_data_aug_all_bcdr_optimam_val.json'),
@@ -176,7 +176,7 @@ data = dict(
         pipeline=test_pipeline,
         img_prefix='',
         classes=classes,
-        #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/OPTIMAM_HOLOGIC_hologic_mass_no_data_aug_val.json'))
+        ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/OPTIMAM_HOLOGIC_hologic_mass_no_data_aug_val.json'))
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/high_density_h800/OPTIMAM_HOLOGIC_hologic_mass_data_aug_acr12_study_lvl_val.json'))
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_acr12_csaw/OPTIMAM_HOLOGIC_mass_acr123_data_aug_acr12_csaw_val.json'))
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_acr12_csaw_bcdr_optimam/OPTIMAM_HOLOGIC_mass_acr123_data_aug_acr12_csaw_bcdr_optimam_val.json'))
@@ -184,7 +184,7 @@ data = dict(
 
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_all_csaw_bcdr_optimam/OPTIMAM_HOLOGIC_mass_acr123_data_aug_all_csaw_bcdr_optimam_val.json'))
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_all_csaw_optimam/OPTIMAM_HOLOGIC_mass_acr123_data_aug_all_csaw_optimam_val.json'))
-        ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_all_optimam/OPTIMAM_HOLOGIC_mass_acr123_data_aug_all_optimam_val.json'))
+        #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_all_optimam/OPTIMAM_HOLOGIC_mass_acr123_data_aug_all_optimam_val.json'))
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_all_csaw/OPTIMAM_HOLOGIC_mass_acr123_data_aug_all_csaw_val.json'))
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_all_bcdr/OPTIMAM_HOLOGIC_mass_acr123_data_aug_all_bcdr_val.json'))
         #ann_file='/datasets/OPTIMAM/png_screening_cropped_fixed/data_aug/high_density/detection/cyclegan/mass_acr123_data_aug_all_bcdr_optimam/OPTIMAM_HOLOGIC_mass_acr123_data_aug_all_bcdr_optimam_val.json'))
@@ -239,3 +239,6 @@ runner = dict(type='EpochBasedRunner', max_epochs=40)
 #OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=${PYTHONPATH}:./ python tools/train.py /home/lidia/source/mmdetection/configs/optimam/def_detr_aug_cyclegan.py --work-dir /home/lidia/source/mmdetection/experiments/optimam/hologic/mass/def_detr/train_acr123/no_hstd/data_aug_acr_all_bcdr_optimam_seed_999 --seed 999 --deterministic
 
 #OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=${PYTHONPATH}:./ python tools/train.py /home/lidia/source/mmdetection/configs/optimam/def_detr_aug_cyclegan.py --work-dir /home/lidia/source/mmdetection/experiments/optimam/hologic/mass/def_detr/train_acr123/no_hstd/data_aug_all_high_to_low_seed_999 --seed 999 --deterministic
+
+#Test GPU
+#CUDA_LAUNCH_BLOCKING=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 PYTHONPATH=${PYTHONPATH}:./ python tools/train.py /home/lidia/source/mmdetection/configs/optimam/def_detr_aug_cyclegan.py --work-dir /home/lidia/source/mmdetection/experiments/test_gpu/gpu_0 --seed 999 --deterministic
